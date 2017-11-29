@@ -6,25 +6,25 @@
           <h1>Габаритные и количественные данные объектов</h1>
         </el-col>
     </el-row>
-    <div class="margined-bottom"v-for="item in items" :key="item.id">
+    <div class="margined-bottom"v-for="(item, index) in items" :key="item.index">
       <!-- Change span to :xs="8" :sm="6" :md="4" :lg="3" :xl="1" -->
       <el-row :gutter="20">
         <el-col :lg="1">
           <el-button disabled>
-            {{item.id}}
+            {{index+1}}
           </el-button>
         </el-col>
         <el-col :xs="24" :lg="11" :xl="5">
           <el-input type="text" v-model="item.name"/>
         </el-col>
         <el-col :xs="24" :lg="3">
-          <el-input-number controls-position="right" v-model="item.width"/>
+          <el-input-number class="fixed" controls-position="right" v-model="item.x"/>
         </el-col>
         <el-col :xs="24" :lg="3">
-          <el-input-number controls-position="right" v-model="item.height"/>
+          <el-input-number controls-position="right" v-model="item.y"/>
         </el-col>
         <el-col :xs="24" :lg="3">
-          <el-input-number controls-position="right" v-model="item.length"/>
+          <el-input-number controls-position="right" v-model="item.z"/>
         </el-col>
         <el-col :offset="2" :xs="24" :lg="1">
           <el-button type="danger" @click="deleteItem(item.id)">
@@ -34,24 +34,28 @@
       </el-row>
       <el-row :gutter="20">
         <el-col :xs="24" :lg="3">
-          <el-input type="text"/>
+          <el-input type="text" v-model.number="item.width" @blur="handleEq(item)"/>
         </el-col>
         <el-col :xs="24" :lg="3">
-          <el-input type="text"/>
+          <el-input type="text" v-model.number="item.height" @blur="handleEq(item)" :disabled="!item.volume"/>
         </el-col>
         <el-col :xs="24" :lg="3">
-          <el-input type="text"/>
+          <el-input type="text" v-model.number="item.lenght" @blur="handleEq(item)"/>
         </el-col>
         <el-col :xs="24" :lg="2">
-          <el-radio-group v-model="item.radio">
-            <el-radio-button label="1"></el-radio-button>
-            <el-radio-button label="2"></el-radio-button>
+          <el-radio-group v-model="item.volume">
+            <el-radio-button :value="true">
+              <img src="src/assets/polygon.png"/>
+            </el-radio-button>
+            <el-radio-button :value="false" label="2">
+              <img src="src/assets/box.png"/>
+            </el-radio-button>
           </el-radio-group>
         </el-col>
         <el-col :xs="24" :lg="2" :offset="2">
-          <el-radio-group v-model="item.radio2">
-            <el-radio-button label="A"></el-radio-button>
-            <el-radio-button label="B"></el-radio-button>
+          <el-radio-group v-model="item.isBSelected">
+            <el-radio-button :value="true" :disabled="!item.volume" label="A"></el-radio-button>
+            <el-radio-button :value="false" label="B" :disabled="false"></el-radio-button>
           </el-radio-group>
         </el-col>
         <el-col :xs="24" :lg="2" :offset="2">
@@ -78,7 +82,7 @@
       </el-row>
       <el-row :gutter="20">
         <el-col :xs="24" :lg="4">
-          <el-input-number v-model="params.calc1" :min="1" :max="10" controls-position="right"/>
+          <el-input-number v-model="params.calc1" :min="1" :max="10" controls-position="right" class="fixed2"/>
         </el-col>
         <el-col :xs="24" :lg="4">
           <el-input-number v-model="params.calc2" :min="0" :max="10" controls-position="right"/>
@@ -90,16 +94,14 @@
           <el-input-number v-model="params.calc4" :min="1" :max="10" controls-position="right"/>
         </el-col>
         <el-col :xs="24" :lg="4">
-        <el-dropdown split-button type="primary">
-          Зона
-          <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item>Зона 1</el-dropdown-item>
-            <el-dropdown-item>Зона 2</el-dropdown-item>
-          </el-dropdown-menu>
-        </el-dropdown>
+        <el-select placeholder="Зона" v-model="zone" split-button type="primary">
+          <el-option value="Зона 1">Зона 1</el-option>
+          <el-option value="Зона 2">Зона 2</el-option>
+          <el-option value="ФР">ФР</el-option>
+        </el-select>
         </el-col>
         <el-col :xs="24" :lg="4">
-          <el-input-number v-model="num2" :disabled="true"></el-input-number>
+          <el-input-number v-model="num2" :disabled="zone!=='ФР'"></el-input-number>
         </el-col>
         </el-row>
         <el-row>
@@ -126,19 +128,35 @@ export default {
         calc4: 10
       },
       i: 0,
-      num2: 1
+      num2: 1,
+      zone: ''
     }
   },
   methods: {
+    handleEq (inputEl) {
+      // const a = parseInt(value)
+      // value = a.toFixed(1)
+      const item = this.items.find(function(el) {
+        return el == inputEl
+      })
+      item.width = item.width.toFixed(1)
+      item.height = item.height.toFixed(1)
+      item.lenght = item.lenght.toFixed(1)
+    },
     addItem () {
       this.items.push({
         id: ++this.i,
         radio: '1',
         radio2: 'A',
         name: '',
-        width: 10,
+        x: 10,
+        y: 0,
+        z: 0,
+        width: 0,
         height: 0,
-        length: 0
+        lenght: 0,
+        volume: true,
+        isBSelected: true
       })
     },
     deleteItem (id) {
